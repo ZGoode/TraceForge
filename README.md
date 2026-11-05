@@ -145,8 +145,6 @@ If you're changing the code, these are worth keeping in mind:
 | Built-in user guide | Working |
 | Automated tests | Passing |
 
-It's ready to use for real work, and I'm still testing it before calling it a final 1.0.0.
-
 ## Future Work
 
 Right now the focus is on using it with real projects and fixing whatever turns up.
