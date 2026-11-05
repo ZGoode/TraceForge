@@ -1,0 +1,570 @@
+<Window x:Class="TraceForge.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:auto="clr-namespace:System.Windows.Automation;assembly=PresentationCore"
+        Title="TraceForge" Icon="Assets/TraceForge.ico" Height="680" Width="1180"
+        MinWidth="900" MinHeight="520" FontSize="13"
+        PreviewKeyDown="Window_PreviewKeyDown" Closing="Window_Closing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <SolidColorBrush x:Key="Line" Color="#FFD3DAE3"/>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="MinWidth" Value="34"/>
+            <Setter Property="Background" Value="#FFFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#FFB4BFCC"/>
+            <Setter Property="Foreground" Value="#FF1B2430"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bd" Property="Background" Value="#FFE8F0FB"/><Setter TargetName="Bd" Property="BorderBrush" Value="#FF1F5FBF"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Bd" Property="BorderBrush" Value="#FF1F5FBF"/><Setter TargetName="Bd" Property="Background" Value="#FFF1F6FD"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bd" Property="Background" Value="#FFCFE0F7"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Bd" Property="Opacity" Value="0.45"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#FF1F5FBF"/>
+            <Setter Property="BorderBrush" Value="#FF1F5FBF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Foreground" Value="#FFB3261E"/>
+        </Style>
+        <Style x:Key="ToolSep" TargetType="Rectangle">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="6,0,12,0"/>
+            <Setter Property="Fill" Value="#FFB4BFCC"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="GridHeader" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#FFEEF2F7"/>
+            <Setter Property="Foreground" Value="#FF1B2430"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderBrush" Value="#FFD3DAE3"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+        <Style x:Key="GridCell" TargetType="DataGridCell">
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" auto:AutomationProperties.Name="Main menu">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Project…" InputGestureText="Ctrl+N" Click="NewProject_Click"/>
+                <MenuItem Header="_Open Project…" InputGestureText="Ctrl+O" Click="OpenProject_Click"/>
+                <MenuItem x:Name="MenuClose" Header="_Close Project" Click="CloseProject_Click"/>
+                <MenuItem x:Name="MenuCheck" Header="Check _Integrity" Click="CheckIntegrity_Click"/>
+                <MenuItem x:Name="MenuCleanAttachments" Header="Clean Up Unused Attachment _Files…" Click="CleanAttachments_Click" ToolTip="Deletes files in the project's attachments folder that no attachment uses (left behind by Delete Permanently or interrupted imports)"/>
+                <MenuItem x:Name="MenuAudit" Header="Show _Audit Log…" Click="AuditLog_Click"/>
+                <MenuItem x:Name="MenuBackup" Header="_Back Up Project…" Click="BackUp_Click" ToolTip="Saves the whole project (database and attachments) as one zip file"/>
+                <MenuItem Header="_Restore Project from Backup…" Click="RestoreBackup_Click" ToolTip="Unpacks a backup zip into a NEW project folder and opens it"/>
+                <Separator/>
+                <MenuItem x:Name="MenuImport" Header="I_mport CSV into This Module…" Click="ImportCsv_Click"/>
+                <MenuItem x:Name="MenuImportReqIf" Header="Import Re_qIF into This Module…" Click="ImportReqIf_Click"/>
+                <MenuItem x:Name="MenuExport" Header="_Export This Module to CSV…" Click="ExportCsv_Click"/>
+                <MenuItem x:Name="MenuExportReqIf" Header="Export Module and Children as Req_IF…" Click="ExportReqIf_Click"/>
+                <MenuItem x:Name="MenuExportHtml" Header="Export Module and Children as _HTML Report…" Click="ExportHtml_Click"/>
+                <MenuItem x:Name="MenuExportAll" Header="Export _All Modules to a Folder…" Click="ExportAll_Click"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuEdit" Header="_Edit" SubmenuOpened="MenuEdit_SubmenuOpened">
+                <MenuItem x:Name="MenuUndo" Header="_Undo" InputGestureText="Ctrl+Z" Click="Undo_Click"/>
+                <MenuItem x:Name="MenuRedo" Header="_Redo" InputGestureText="Ctrl+Y" Click="Redo_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuModule" Header="_Module">
+                <MenuItem Header="New _Module (top level)…" Click="NewModule_Click"/>
+                <MenuItem Header="New _Child Module of Selected…" Click="NewChildModule_Click"/>
+                <MenuItem Header="New _Folder (top level)…" Click="NewFolder_Click"/>
+                <MenuItem Header="New Su_bfolder of Selected…" Click="NewSubfolder_Click"/>
+                <MenuItem Header="Rena_me Selected Module or Folder…" InputGestureText="F2 (in tree)" Click="RenameContainer_Click"/>
+                <MenuItem Header="Move Selected _Up in Tree" InputGestureText="Alt+Up (in tree)" Click="ContainerUp_Click"/>
+                <MenuItem Header="Move Selected Do_wn in Tree" InputGestureText="Alt+Down (in tree)" Click="ContainerDown_Click"/>
+                <MenuItem Header="Move Selected _To…" Click="MoveContainerTo_Click" ToolTip="Put the selected module or folder under another module or folder, or at top level"/>
+                <MenuItem x:Name="MenuDeleteContainer" Header="De_lete Selected Module or Folder…" InputGestureText="Del (in tree)" Click="DeleteContainer_Click" ToolTip="Marks it (and everything inside) as deleted. Nothing is destroyed: show it again under View, Show deleted modules"/>
+                <MenuItem x:Name="MenuRestoreContainer" Header="Resto_re Deleted Module or Folder" Click="RestoreContainer_Click"/>
+                <MenuItem Header="Show Links Into Deleted Modules…" Click="LinksIntoDeleted_Click" ToolTip="Lists links between deleted modules (or the selected deleted module) and modules that are staying, so they can be repaired before anything is deleted permanently"/>
+                <MenuItem x:Name="MenuPurgeContainer" Header="Delete _Permanently (deleted ones only)…" Click="PurgeContainer_Click" ToolTip="Destroys a deleted module or folder and everything in it. Cannot be undone"/>
+                <Separator/>
+                <MenuItem Header="_Edit Object Text…" InputGestureText="Ctrl+E" Click="EditText_Click" ToolTip="Supports **bold**, *italic*, lines starting with - as bullets"/>
+                <MenuItem Header="Add _Heading Below" Click="AddHeading_Click"/>
+                <MenuItem Header="Add _Object Below" Click="AddObject_Click"/>
+                <MenuItem Header="Add _Child Object" Click="AddChild_Click"/>
+                <Separator/>
+                <MenuItem Header="C_opy Object and Section" InputGestureText="Ctrl+C" Click="Copy_Click"/>
+                <MenuItem Header="_Paste Below" InputGestureText="Ctrl+V" Click="Paste_Click"/>
+                <MenuItem Header="Paste as Chil_d" InputGestureText="Ctrl+Shift+V" Click="PasteChild_Click"/>
+                <MenuItem Header="_Delete Object and Section" InputGestureText="Del" Click="Delete_Click"/>
+                <MenuItem Header="_Deleted Objects (Restore)…" Click="Deleted_Click"/>
+                <Separator/>
+                <MenuItem Header="Move _Up" InputGestureText="Alt+Up" Click="MoveUp_Click"/>
+                <MenuItem Header="Move _Down" InputGestureText="Alt+Down" Click="MoveDown_Click"/>
+                <MenuItem Header="_Indent" InputGestureText="Ctrl+Right" Click="Indent_Click"/>
+                <MenuItem Header="O_utdent" InputGestureText="Ctrl+Left" Click="Outdent_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuView" Header="_View">
+                <MenuItem x:Name="ViewLinkIds" Header="Show _link ID columns (Linked from / Links to)" IsCheckable="True" IsChecked="True" Click="ViewOption_Click"/>
+                <MenuItem x:Name="ViewNotes" Header="Show _notes column (comments and attachments)" IsCheckable="True" IsChecked="True" Click="ViewOption_Click"/>
+                <MenuItem x:Name="ViewDetails" Header="Show _detail panel" IsCheckable="True" IsChecked="True" Click="ViewOption_Click"/>
+                <MenuItem x:Name="ViewCompact" Header="_Compact rows" IsCheckable="True" Click="ViewOption_Click"/>
+                <MenuItem x:Name="ViewLarge" Header="Larger _text" IsCheckable="True" Click="ViewOption_Click"/>
+                <MenuItem x:Name="ViewDeleted" Header="Show _deleted modules and folders (light red)" IsCheckable="True" Click="ViewOption_Click"/>
+                <Separator/>
+                <MenuItem Header="Choose shown attribute _columns…" Click="Columns_Click"/>
+                <MenuItem Header="Show _all columns" Click="ShowAllColumns_Click"/>
+                <MenuItem Header="_Clear filter and sort" Click="ClearFilter_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuLinks" Header="_Links">
+                <MenuItem Header="_Link Selected to Child Objects…" InputGestureText="Ctrl+L" Click="Link_Click"/>
+                <MenuItem Header="Link Selected to _Parent Objects…" InputGestureText="Ctrl+Shift+L" Click="LinkParent_Click"/>
+                <MenuItem Header="_Go to Object…" InputGestureText="Ctrl+G" Click="GoTo_Click"/>
+                <Separator/>
+                <MenuItem Header="_Suspect Links in This Module…" Click="Suspects_Click"/>
+                <MenuItem Header="Impact of Selected Object (_downstream)…" Click="ImpactDown_Click"/>
+                <MenuItem Header="Impact of Selected Object (_upstream)…" Click="ImpactUp_Click"/>
+                <Separator/>
+                <MenuItem Header="Cover_age Summary (this module and children)…" Click="CoverageSummary_Click"/>
+                <MenuItem Header="Traceability _Gaps (this module and children)…" Click="CoverageGaps_Click"/>
+                <MenuItem Header="E_xport Traceability Gaps (CSV)…" Click="CoverageExport_Click"/>
+                <Separator/>
+                <MenuItem x:Name="MenuTraceWhole" Header="Trace _Whole Module" IsCheckable="True" Click="TraceWhole_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuHistory" Header="_History">
+                <MenuItem Header="Create _Baseline of This Module…" Click="CreateBaseline_Click"/>
+                <MenuItem Header="_Compare Baseline with Current State…" Click="CompareCurrent_Click"/>
+                <MenuItem Header="Compare _Two Baselines…" Click="CompareTwo_Click"/>
+                <Separator/>
+                <MenuItem Header="_View a Baseline…" Click="ViewBaseline_Click"/>
+                <MenuItem Header="Create Baseline of Module and _Child Modules…" Click="CreateBaselineSet_Click"/>
+                <MenuItem Header="Compare Baseline _Set with Current State…" Click="CompareSet_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuAttributes" Header="_Attributes">
+                <MenuItem Header="_New Attribute for This Module…" Click="NewAttribute_Click"/>
+                <MenuItem Header="Add _Existing Attribute to This Module…" Click="AddExistingAttribute_Click"/>
+                <MenuItem Header="_Copy All Attribute Columns from Another Module…" Click="CopyAttributes_Click" ToolTip="Set up a new module quickly with the same columns as another one"/>
+                <MenuItem Header="_Remove Attribute Column from This Module…" Click="RemoveAttribute_Click" ToolTip="Only possible when no object of this module has a value for it"/>
+                <MenuItem Header="Choose Shown _Columns…" Click="Columns_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_User Guide" InputGestureText="F1" Click="Help_Click"/>
+                <MenuItem Header="_Keyboard Shortcuts" Click="HelpShortcuts_Click"/>
+                <Separator/>
+                <MenuItem Header="Open _Log Folder" Click="OpenLogFolder_Click" ToolTip="Opens the folder with diagnostics.log and crash.log (useful when asking for help)"/>
+                <MenuItem Header="_About TraceForge" Click="About_Click"/>
+            </MenuItem>
+        </Menu>
+        <Border DockPanel.Dock="Top" Background="#FFF5F7FA" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="8,6,8,2">
+            <WrapPanel x:Name="MainToolBar" auto:AutomationProperties.Name="Main toolbar">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Button Content="&#x21B6; Undo" Style="{StaticResource ActionButton}" Click="Undo_Click" ToolTip="Undo the last change (Ctrl+Z)"/>
+                    <Button Content="Redo &#x21B7;" Style="{StaticResource ActionButton}" Click="Redo_Click" ToolTip="Redo (Ctrl+Y)"/>
+                    <Rectangle Style="{StaticResource ToolSep}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Button Content="+ Object" Style="{StaticResource PrimaryButton}" Click="AddObject_Click" ToolTip="Add an object below the selection"/>
+                    <Button Content="+ Heading" Style="{StaticResource ActionButton}" Click="AddHeading_Click" ToolTip="Add a heading below the selection"/>
+                    <Button Content="+ Child" Style="{StaticResource ActionButton}" Click="AddChild_Click" ToolTip="Add an object inside the selected one"/>
+                    <Rectangle Style="{StaticResource ToolSep}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Button Content="Edit text…" Style="{StaticResource ActionButton}" Click="EditText_Click" ToolTip="Change the selected object's text (Ctrl+E)"/>
+                    <Button Content="Copy" Style="{StaticResource ActionButton}" Click="Copy_Click" ToolTip="Copy the selected object and its section (Ctrl+C)"/>
+                    <Button Content="Paste &#x25BE;" Style="{StaticResource ActionButton}" Click="MenuButton_Click" ToolTip="Paste below or inside the selection (Ctrl+V)" auto:AutomationProperties.Name="Paste menu">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Paste below" InputGestureText="Ctrl+V" Click="Paste_Click"/>
+                                <MenuItem Header="Paste as child" InputGestureText="Ctrl+Shift+V" Click="PasteChild_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button Content="Delete" Style="{StaticResource DangerButton}" Click="Delete_Click" ToolTip="Delete the selected object and its section; it can be restored (Del)"/>
+                    <Rectangle Style="{StaticResource ToolSep}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Button Content="Link &#x25BE;" Style="{StaticResource ActionButton}" Click="MenuButton_Click" ToolTip="Create links for the selected object" auto:AutomationProperties.Name="Link menu">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Link to child objects…" InputGestureText="Ctrl+L" Click="Link_Click"/>
+                                <MenuItem Header="Link to parent objects…" InputGestureText="Ctrl+Shift+L" Click="LinkParent_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button Content="Go to…" Style="{StaticResource ActionButton}" Click="GoTo_Click" ToolTip="Jump to any object by ID or text (Ctrl+G)"/>
+                    <Rectangle Style="{StaticResource ToolSep}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Button Content="Arrange &#x25BE;" Style="{StaticResource ActionButton}" Click="MenuButton_Click" ToolTip="Move or re-indent the selected object" auto:AutomationProperties.Name="Arrange menu">
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Move up" InputGestureText="Alt+Up" Click="MoveUp_Click"/>
+                                <MenuItem Header="Move down" InputGestureText="Alt+Down" Click="MoveDown_Click"/>
+                                <MenuItem Header="Indent" InputGestureText="Ctrl+Right" Click="Indent_Click"/>
+                                <MenuItem Header="Outdent" InputGestureText="Ctrl+Left" Click="Outdent_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="No project is open. Use File, New Project or Open Project." auto:AutomationProperties.Name="Status"/>
+            </StatusBarItem>
+        </StatusBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" Text="Project modules" FontWeight="SemiBold" Margin="10,10,8,6"/>
+                <TreeView x:Name="ModuleTree" SelectedItemChanged="ModuleTree_SelectedItemChanged" PreviewMouseRightButtonDown="SelectOnRightClick" auto:AutomationProperties.Name="Project modules" BorderThickness="0,1,0,0" BorderBrush="{StaticResource Line}">
+                    <TreeView.ContextMenu>
+                        <ContextMenu Opened="ModuleMenu_Opened">
+                            <MenuItem x:Name="CmNewModule" Header="New module (top level)…" Click="NewModule_Click"/>
+                            <MenuItem x:Name="CmNewChild" Header="New child module of this…" Click="NewChildModule_Click"/>
+                            <MenuItem x:Name="CmNewFolder" Header="New folder (top level)…" Click="NewFolder_Click"/>
+                            <MenuItem x:Name="CmNewSubfolder" Header="New subfolder of this…" Click="NewSubfolder_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="CmRename" Header="Rename…" Click="RenameContainer_Click"/>
+                            <MenuItem x:Name="CmContainerUp" Header="Move up" Click="ContainerUp_Click"/>
+                            <MenuItem x:Name="CmContainerDown" Header="Move down" Click="ContainerDown_Click"/>
+                            <MenuItem x:Name="CmContainerMove" Header="Move to…" Click="MoveContainerTo_Click"/>
+                            <MenuItem x:Name="CmContainerDelete" Header="Delete…" Click="DeleteContainer_Click"/>
+                            <MenuItem x:Name="CmContainerRestore" Header="Restore" Click="RestoreContainer_Click"/>
+                            <MenuItem x:Name="CmContainerLinks" Header="Links into deleted modules…" Click="LinksIntoDeleted_Click"/>
+                            <MenuItem x:Name="CmContainerPurge" Header="Delete permanently…" Click="PurgeContainer_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="CmModImport" Header="Import" >
+                                <MenuItem Header="CSV into this module…" Click="ImportCsv_Click"/>
+                                <MenuItem Header="ReqIF into this module…" Click="ImportReqIf_Click"/>
+                            </MenuItem>
+                            <MenuItem x:Name="CmModExport" Header="Export">
+                                <MenuItem Header="This module to CSV…" Click="ExportCsv_Click"/>
+                                <MenuItem Header="Module and children as HTML report…" Click="ExportHtml_Click"/>
+                                <MenuItem Header="Module and children as ReqIF…" Click="ExportReqIf_Click"/>
+                            </MenuItem>
+                            <MenuItem x:Name="CmModReports" Header="Reports">
+                                <MenuItem Header="Suspect links in this module…" Click="Suspects_Click"/>
+                                <MenuItem Header="Coverage summary…" Click="CoverageSummary_Click"/>
+                                <MenuItem Header="Traceability gaps…" Click="CoverageGaps_Click"/>
+                            </MenuItem>
+                            <MenuItem x:Name="CmModBaseline" Header="Create baseline of this module…" Click="CreateBaseline_Click"/>
+                            <MenuItem x:Name="CmModDeleted" Header="Deleted objects (restore)…" Click="Deleted_Click"/>
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Label}" FontWeight="{Binding Weight}" Background="{Binding Background}" Padding="3,0"/>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </DockPanel>
+            <GridSplitter Grid.Column="1" Width="6" Background="#FFE6EBF1" HorizontalAlignment="Stretch" auto:AutomationProperties.Name="Resize module list"/>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="DetailsRow" Height="230"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" x:Name="FilterBar">
+                    <DockPanel Margin="8,8,8,6" LastChildFill="True">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0,0,0">
+                            <ToggleButton x:Name="FiltersToggle" Content="Filters &#x25BE;" Padding="10,4" Margin="0,0,6,0" ToolTip="More filters: attribute value and link status" auto:AutomationProperties.Name="More filters"/>
+                            <Button Content="Clear" Style="{StaticResource ActionButton}" Click="ClearFilter_Click" ToolTip="Clear the filter and the sort order"/>
+                            <Button Content="Views &#x25BE;" Style="{StaticResource ActionButton}" Margin="0" Click="MenuButton_Click" ToolTip="Saved views and columns" auto:AutomationProperties.Name="Views menu">
+                                <Button.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Save current filter as a view…" Click="SaveView_Click"/>
+                                        <MenuItem Header="Delete the selected view" Click="DeleteView_Click"/>
+                                        <Separator/>
+                                        <MenuItem Header="Choose shown columns…" Click="Columns_Click"/>
+                                        <MenuItem Header="Show all columns" Click="ShowAllColumns_Click"/>
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                            </Button>
+                        </StackPanel>
+                        <ComboBox DockPanel.Dock="Right" x:Name="ViewBox" Width="170" Padding="6,3" DisplayMemberPath="Name" SelectionChanged="ViewBox_SelectionChanged" ToolTip="Saved views" auto:AutomationProperties.Name="Saved views"/>
+                        <TextBlock DockPanel.Dock="Right" Text="View" VerticalAlignment="Center" Margin="12,0,6,0" Foreground="#FF5B6675"/>
+                        <TextBox x:Name="FilterText" Padding="6,4" TextChanged="Filter_Changed" ToolTip="Type to filter objects by text or ID (Ctrl+F)" auto:AutomationProperties.Name="Filter text (Ctrl+F)"/>
+                    </DockPanel>
+                    <Border Visibility="{Binding IsChecked, ElementName=FiltersToggle, Converter={StaticResource B2V}}" Background="#FFF5F7FA" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,1" Padding="10,6">
+                        <WrapPanel>
+                            <TextBlock Text="Attribute" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#FF5B6675"/>
+                            <ComboBox x:Name="FilterAttr" Width="150" DisplayMemberPath="Name" SelectionChanged="Filter_Changed" auto:AutomationProperties.Name="Filter attribute"/>
+                            <TextBlock Text="contains" VerticalAlignment="Center" Margin="8,0,6,0" Foreground="#FF5B6675"/>
+                            <TextBox x:Name="FilterAttrText" Width="130" Padding="4,2" TextChanged="Filter_Changed" auto:AutomationProperties.Name="Filter attribute value"/>
+                            <TextBlock Text="Links" VerticalAlignment="Center" Margin="20,0,6,0" Foreground="#FF5B6675"/>
+                            <ComboBox x:Name="FilterLinks" Width="190" DisplayMemberPath="Name" SelectionChanged="Filter_Changed" auto:AutomationProperties.Name="Link filter"/>
+                        </WrapPanel>
+                    </Border>
+                </StackPanel>
+                <DataGrid Grid.Row="1" x:Name="ObjectGrid" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#FFE3E8EE"
+                          RowHeight="30" AlternationCount="2" BorderThickness="0,1,0,0" BorderBrush="{StaticResource Line}" Background="White"
+                          ColumnHeaderStyle="{StaticResource GridHeader}" CellStyle="{StaticResource GridCell}" CanUserResizeRows="False"
+                          CellEditEnding="ObjectGrid_CellEditEnding" SelectionChanged="ObjectGrid_SelectionChanged"
+                          PreviewMouseRightButtonDown="ObjectGrid_RightClick" Sorting="ObjectGrid_Sorting" auto:AutomationProperties.Name="Module objects">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="ToolTip" Value="{Binding MissingText}"/>
+                            <Style.Triggers>
+                                <Trigger Property="ItemsControl.AlternationIndex" Value="1"><Setter Property="Background" Value="#FFF8FAFC"/></Trigger>
+                                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#FFD6E6FB"/><Setter Property="Foreground" Value="#FF10233F"/></Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu x:Name="GridMenu" Opened="GridMenu_Opened">
+                            <MenuItem x:Name="CmEdit" Header="Edit text…" InputGestureText="Ctrl+E" Click="EditText_Click"/>
+                            <MenuItem Header="Add">
+                                <MenuItem Header="Object below" Click="AddObject_Click"/>
+                                <MenuItem x:Name="CmAddHeading" Header="Heading below" Click="AddHeading_Click"/>
+                                <MenuItem x:Name="CmAddChild" Header="Child object" Click="AddChild_Click"/>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="CmCopy" Header="Copy object and section" InputGestureText="Ctrl+C" Click="Copy_Click"/>
+                            <MenuItem Header="Paste below" InputGestureText="Ctrl+V" Click="Paste_Click"/>
+                            <MenuItem x:Name="CmPasteChild" Header="Paste as child" InputGestureText="Ctrl+Shift+V" Click="PasteChild_Click"/>
+                            <MenuItem x:Name="CmDelete" Header="Delete" InputGestureText="Del" Click="Delete_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="CmMove" Header="Move and indent">
+                                <MenuItem Header="Move up" InputGestureText="Alt+Up" Click="MoveUp_Click"/>
+                                <MenuItem Header="Move down" InputGestureText="Alt+Down" Click="MoveDown_Click"/>
+                                <MenuItem Header="Indent" InputGestureText="Ctrl+Right" Click="Indent_Click"/>
+                                <MenuItem Header="Outdent" InputGestureText="Ctrl+Left" Click="Outdent_Click"/>
+                            </MenuItem>
+                            <MenuItem x:Name="CmLinks" Header="Links">
+                                <MenuItem Header="Link to child objects…" InputGestureText="Ctrl+L" Click="Link_Click"/>
+                                <MenuItem Header="Link to parent objects…" InputGestureText="Ctrl+Shift+L" Click="LinkParent_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Impact: what depends on this (downstream)…" Click="ImpactDown_Click"/>
+                                <MenuItem Header="Impact: what this depends on (upstream)…" Click="ImpactUp_Click"/>
+                            </MenuItem>
+                            <MenuItem x:Name="CmGoIn" Header="Go to &#x25C0; linked from"/>
+                            <MenuItem x:Name="CmGoOut" Header="Go to &#x25B6; links to"/>
+                            <Separator/>
+                            <MenuItem x:Name="CmComment" Header="Add comment…" Click="CommentNew_Click"/>
+                            <MenuItem x:Name="CmAttach" Header="Attach file…" Click="AttachFile_Click"/>
+                            <MenuItem x:Name="CmShow" Header="Show in detail panel">
+                                <MenuItem Header="Trace" Tag="0" Click="CmTab_Click"/>
+                                <MenuItem Header="Links" Tag="1" Click="CmTab_Click"/>
+                                <MenuItem Header="History" Tag="2" Click="CmTab_Click"/>
+                                <MenuItem Header="Text preview" Tag="3" Click="CmTab_Click"/>
+                                <MenuItem Header="Comments" Tag="4" Click="CmTab_Click"/>
+                                <MenuItem Header="Attachments" Tag="5" Click="CmTab_Click"/>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="CmCopyId" Header="Copy ID" Click="CopyId_Click"/>
+                            <MenuItem x:Name="CmCopyText" Header="Copy text to clipboard" Click="CopyText_Click"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="!" Binding="{Binding Flag}" IsReadOnly="True" Width="44"/>
+                        <DataGridTemplateColumn Header="&#x25C0;" IsReadOnly="True" Width="40" SortMemberPath="InLinks">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding InArrow}" ToolTip="{Binding InTip}" Cursor="Hand" Background="Transparent" Foreground="#FFC2570C" FontWeight="Bold" HorizontalAlignment="Center" MouseLeftButtonUp="InArrow_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="&#x25B6;" IsReadOnly="True" Width="40" SortMemberPath="OutLinks">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding OutArrow}" ToolTip="{Binding OutTip}" Cursor="Hand" Background="Transparent" Foreground="#FF1F5FBF" FontWeight="Bold" HorizontalAlignment="Center" MouseLeftButtonUp="OutArrow_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Number" Binding="{Binding Number}" IsReadOnly="True" Width="80"/>
+                        <DataGridTemplateColumn Header="Object text" IsReadOnly="True" Width="360">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Display}" Margin="{Binding Indent}" FontWeight="{Binding Weight}" TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="ID" Binding="{Binding CanonicalId}" IsReadOnly="True" Width="100"/>
+                        <DataGridTextColumn Header="Linked from" Binding="{Binding InSummary}" IsReadOnly="True" Width="130"/>
+                        <DataGridTextColumn Header="Links to" Binding="{Binding OutSummary}" IsReadOnly="True" Width="130"/>
+                        <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" IsReadOnly="True" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <GridSplitter x:Name="DetailsSplitter" Grid.Row="2" Height="6" Background="#FFE6EBF1" HorizontalAlignment="Stretch" auto:AutomationProperties.Name="Resize details panel"/>
+                <TabControl x:Name="DetailsTabs" Grid.Row="3" auto:AutomationProperties.Name="Details">
+                    <TabItem Header="Trace">
+                        <DockPanel>
+                            <TextBlock x:Name="TraceHeader" DockPanel.Dock="Top" Text="Trace" FontWeight="SemiBold" Margin="8,6,8,4"/>
+                            <TreeView x:Name="TraceTree" MouseDoubleClick="TraceTree_DoubleClick" auto:AutomationProperties.Name="Trace tree (double-click to jump)" PreviewMouseRightButtonDown="SelectOnRightClick">
+                                <TreeView.ContextMenu><ContextMenu>
+                                    <MenuItem Header="Go to this object" Click="TraceGoTo_Click"/>
+                                    <MenuItem Header="Copy text" Click="TraceCopy_Click"/>
+                                </ContextMenu></TreeView.ContextMenu>
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="TreeViewItem"><Setter Property="IsExpanded" Value="True"/></Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Kind}" Foreground="Gray" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Text}"/>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="Links">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,6,6,4">
+                                <Button Style="{StaticResource ActionButton}" Content="Go to" Click="LinkGoTo_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Remove link" Click="LinkRemove_Click"/>
+                                <TextBlock x:Name="LinksHeader" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <ListView x:Name="LinksList" MouseDoubleClick="LinksList_DoubleClick" auto:AutomationProperties.Name="Links of the selected object" PreviewMouseRightButtonDown="SelectOnRightClick">
+                                <ListView.ContextMenu><ContextMenu>
+                                    <MenuItem Header="Go to linked object" Click="LinkGoTo_Click"/>
+                                    <MenuItem Header="Copy text" Click="ListCopy_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Remove link…" Click="LinkRemove_Click"/>
+                                </ContextMenu></ListView.ContextMenu>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Direction" Width="90" DisplayMemberBinding="{Binding Direction}"/>
+                                        <GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding Type}"/>
+                                        <GridViewColumn Header="Object" Width="420" DisplayMemberBinding="{Binding Text}"/>
+                                        <GridViewColumn Header="Module" Width="140" DisplayMemberBinding="{Binding ModuleName}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="History">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,6,6,4">
+                                <Button Style="{StaticResource ActionButton}" Content="Restore this revision" Click="RestoreRevision_Click" ToolTip="Make the object equal to the selected revision, as a new revision"/>
+                                <TextBlock x:Name="HistoryHeader" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <ListView x:Name="HistoryList" auto:AutomationProperties.Name="Revisions of the selected object" PreviewMouseRightButtonDown="SelectOnRightClick">
+                                <ListView.ContextMenu><ContextMenu>
+                                    <MenuItem Header="Restore this revision" Click="RestoreRevision_Click"/>
+                                    <MenuItem Header="Copy summary" Click="ListCopy_Click"/>
+                                </ContextMenu></ListView.ContextMenu>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Rev" Width="50" DisplayMemberBinding="{Binding Revision}"/>
+                                        <GridViewColumn Header="When" Width="130" DisplayMemberBinding="{Binding When}"/>
+                                        <GridViewColumn Header="By" Width="90" DisplayMemberBinding="{Binding Actor}"/>
+                                        <GridViewColumn Header="Change" Width="420" DisplayMemberBinding="{Binding Summary}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="Text preview">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="PreviewPanel" Margin="10" auto:AutomationProperties.Name="Formatted text of the selected object"/>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Comments">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,6,6,4">
+                                <Button Style="{StaticResource ActionButton}" Content="New comment…" Click="CommentNew_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Reply…" Click="CommentReply_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Resolve / reopen thread" Click="CommentResolve_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Attach file to comment…" Click="CommentAttach_Click" ToolTip="Select a comment first. The file appears in Attachments and can be shown in the comment with its embed code"/>
+                                <TextBlock x:Name="CommentsHeader" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <ScrollViewer DockPanel.Dock="Bottom" Height="170" VerticalScrollBarVisibility="Auto" BorderThickness="0,1,0,0" BorderBrush="Gray">
+                                <StackPanel x:Name="CommentPreview" Margin="8" auto:AutomationProperties.Name="Formatted text of the selected comment"/>
+                            </ScrollViewer>
+                            <ListView x:Name="CommentsList" SelectionChanged="CommentsList_SelectionChanged" auto:AutomationProperties.Name="Comments on the selected object" PreviewMouseRightButtonDown="SelectOnRightClick">
+                                <ListView.ContextMenu><ContextMenu>
+                                    <MenuItem Header="New comment…" Click="CommentNew_Click"/>
+                                    <MenuItem Header="Reply…" Click="CommentReply_Click"/>
+                                    <MenuItem Header="Resolve / reopen thread" Click="CommentResolve_Click"/>
+                                    <MenuItem Header="Attach file to this comment…" Click="CommentAttach_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Copy comment text" Click="ListCopy_Click"/>
+                                </ContextMenu></ListView.ContextMenu>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="When" Width="130" DisplayMemberBinding="{Binding When}"/>
+                                        <GridViewColumn Header="By" Width="90" DisplayMemberBinding="{Binding By}"/>
+                                        <GridViewColumn Header="Status" Width="70" DisplayMemberBinding="{Binding Status}"/>
+                                        <GridViewColumn Header="Comment" Width="420" DisplayMemberBinding="{Binding Text}"/>
+                                        <GridViewColumn Header="Files" Width="200" DisplayMemberBinding="{Binding Files}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="Attachments">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,6,6,4">
+                                <Button Style="{StaticResource ActionButton}" Content="Attach file…" Click="AttachFile_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Open" Click="AttachOpen_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Save copy…" Click="AttachSave_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Remove" Click="AttachRemove_Click"/>
+                                <Button Style="{StaticResource ActionButton}" Content="Copy embed code" Click="AttachCopyEmbed_Click" ToolTip="Copies ![caption](attach:file) to paste into the object's text; pictures and CSV files are then shown in Text preview and the HTML report"/>
+                                <TextBlock x:Name="AttachmentsHeader" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            </StackPanel>
+                            <ListView x:Name="AttachmentsList" MouseDoubleClick="AttachOpen_Click" auto:AutomationProperties.Name="Attachments of the selected object" PreviewMouseRightButtonDown="SelectOnRightClick">
+                                <ListView.ContextMenu><ContextMenu>
+                                    <MenuItem Header="Open" Click="AttachOpen_Click"/>
+                                    <MenuItem Header="Save copy…" Click="AttachSave_Click"/>
+                                    <MenuItem Header="Copy embed code" Click="AttachCopyEmbed_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Attach another file…" Click="AttachFile_Click"/>
+                                    <MenuItem Header="Remove" Click="AttachRemove_Click"/>
+                                </ContextMenu></ListView.ContextMenu>
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="File" Width="300" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="On" Width="70" DisplayMemberBinding="{Binding On}"/>
+                                        <GridViewColumn Header="Size" Width="80" DisplayMemberBinding="{Binding Size}"/>
+                                        <GridViewColumn Header="Added" Width="130" DisplayMemberBinding="{Binding Added}"/>
+                                        <GridViewColumn Header="By" Width="90" DisplayMemberBinding="{Binding By}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

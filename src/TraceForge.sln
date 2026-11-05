@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge.Domain", "src\TraceForge.Domain\TraceForge.Domain.csproj", "{A2D0DBBB-912B-4F8A-8E82-16A40356B0B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge.Application", "src\TraceForge.Application\TraceForge.Application.csproj", "{3F4BCCE0-1B2D-4D8D-86E2-5E6B3AB98BFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge.Infrastructure", "src\TraceForge.Infrastructure\TraceForge.Infrastructure.csproj", "{2EF4558E-C7A4-431A-96ED-F103BE4C458B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge", "TraceForge.csproj", "{9C1AA5E4-4C73-44C8-9EBD-6EE07BA625CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge.Domain.Tests", "tests\TraceForge.Domain.Tests\TraceForge.Domain.Tests.csproj", "{DFDD8438-2D5E-45F6-A6C5-BC8C92C06B64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraceForge.Infrastructure.Tests", "tests\TraceForge.Infrastructure.Tests\TraceForge.Infrastructure.Tests.csproj", "{FEE8263F-9985-4EE5-97E7-BEAF7C48473B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2D0DBBB-912B-4F8A-8E82-16A40356B0B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2D0DBBB-912B-4F8A-8E82-16A40356B0B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2D0DBBB-912B-4F8A-8E82-16A40356B0B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2D0DBBB-912B-4F8A-8E82-16A40356B0B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F4BCCE0-1B2D-4D8D-86E2-5E6B3AB98BFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F4BCCE0-1B2D-4D8D-86E2-5E6B3AB98BFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F4BCCE0-1B2D-4D8D-86E2-5E6B3AB98BFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F4BCCE0-1B2D-4D8D-86E2-5E6B3AB98BFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EF4558E-C7A4-431A-96ED-F103BE4C458B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EF4558E-C7A4-431A-96ED-F103BE4C458B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EF4558E-C7A4-431A-96ED-F103BE4C458B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EF4558E-C7A4-431A-96ED-F103BE4C458B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C1AA5E4-4C73-44C8-9EBD-6EE07BA625CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C1AA5E4-4C73-44C8-9EBD-6EE07BA625CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C1AA5E4-4C73-44C8-9EBD-6EE07BA625CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C1AA5E4-4C73-44C8-9EBD-6EE07BA625CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFDD8438-2D5E-45F6-A6C5-BC8C92C06B64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDD8438-2D5E-45F6-A6C5-BC8C92C06B64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDD8438-2D5E-45F6-A6C5-BC8C92C06B64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDD8438-2D5E-45F6-A6C5-BC8C92C06B64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEE8263F-9985-4EE5-97E7-BEAF7C48473B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE8263F-9985-4EE5-97E7-BEAF7C48473B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE8263F-9985-4EE5-97E7-BEAF7C48473B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE8263F-9985-4EE5-97E7-BEAF7C48473B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

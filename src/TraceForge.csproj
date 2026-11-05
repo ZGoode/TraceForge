@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The desktop app lives at the solution root so that a bare `dotnet run` works here.
+       Libraries are under src\, tests under tests\ and are excluded from this project's globbing. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TraceForge.Desktop</RootNamespace>
+    <AssemblyName>TraceForge</AssemblyName>
+    <DefaultItemExcludes>$(DefaultItemExcludes);src/**;tests/**;docs/**</DefaultItemExcludes>
+    <!-- Only English is shipped; this keeps localized satellite folders out of the output. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <!-- Product information shown in File Properties and in Help, About. -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Product>TraceForge</Product>
+    <Description>Local-first requirements and traceability workbench</Description>
+    <ApplicationIcon>Assets\TraceForge.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Embedded so the window icon and the About picture need no files next to the exe. -->
+    <Resource Include="Assets\TraceForge.ico" />
+    <Resource Include="Assets\TraceForge-256.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="src\TraceForge.Application\TraceForge.Application.csproj" />
+    <ProjectReference Include="src\TraceForge.Infrastructure\TraceForge.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
