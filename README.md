@@ -2,8 +2,6 @@
 
 A local-first requirements and traceability tool for Windows, built with WPF and .NET 10. No server, no subscription, no data leaves your machine. Each project is a folder you can back up, copy, or archive like any other files.
 
-**Status:** Release candidate (1.0.0-rc.1)
-
 ## Concepts
 
 You build a tree of **folders and modules**. Each module holds an outline of **objects** (requirements and grouping headings). A module nested under another is the next level down, e.g. Stakeholder Needs → System Requirements → Design → Tests. **Links** run from one level to the next.
