@@ -1,162 +1,108 @@
 # TraceForge
 
-A requirements and traceability tool for Windows that keeps everything on your own computer. It's built with **WPF and .NET 10**.
+A local-first requirements and traceability tool for Windows, built with WPF and .NET 10. No server, no subscription, no data leaves your machine. Each project is a folder you can back up, copy, or archive like any other files.
 
-I wanted a way to manage requirements, trace them from one level of documents down to the next, and keep a full history of every change, without needing a server, a subscription, or sending project data anywhere. TraceForge is that tool.
+**Status:** Release candidate (1.0.0-rc.1)
 
-Each project is just a folder. You can back it up, copy it, or archive it like any other files.
+## Concepts
 
-## About the Tool
+You build a tree of **folders and modules**. Each module holds an outline of **objects** (requirements and grouping headings). A module nested under another is the next level down, e.g. Stakeholder Needs → System Requirements → Design → Tests. **Links** run from one level to the next.
 
-TraceForge is organized the way most requirements document sets already are. You build a tree of **folders and modules**, and each module holds an outline of **objects**, which are your requirements and the headings that group them. A module nested under another module is the next level down, like Stakeholder Needs, then System Requirements, then Design, then Tests. **Links** run from one level to the next.
+- **Local-first:** a project is a folder on disk.
+- **History is kept:** every change adds a revision; baselines freeze a module at a point in time.
+- **Recoverable:** deletes are soft; permanent deletion is a separate, confirmed step.
 
-A few ideas shaped how it works:
+## Features
 
-- **Local-first.** A project is a folder on your computer, and nothing gets sent anywhere.
-- **History stays put.** Every change to an object adds a new revision instead of overwriting the old one, and baselines freeze a module at a moment in time.
-- **Mistakes are fixable.** Deleting something doesn't destroy it, and wiping it for good is a separate step that asks you to confirm.
+- Folder/module tree with rename, reorder, move, delete, and restore
+- Outlines with typed attributes: text, integer, real, boolean, date, enumeration
+- Validated cell editing, natural sort, filters, saved views
+- Copy/paste sections; undo/redo up to 100 steps
+- Links with arrows, trace tree, and suspect-link review
+- Impact analysis (upstream/downstream), coverage checks, and gap reports
+- Full revision history per object; restore an old revision as a new one
+- Baselines (a module or a module plus everything under it), with comparison to the current state or another baseline
+- Review comments, attachments (SHA-256 checked), embedded images and tables
+- CSV (with preview and spreadsheet-formula guard), ReqIF, and standalone HTML report import/export
+- Integrity check, audit log, backup/restore, unused-attachment cleanup
+- Built-in searchable user guide (**F1**)
 
-## Download and Run
+## Install
 
-For now TraceForge is built from source with the .NET SDK. The build produces a standalone copy that runs on any 64-bit Windows PC without installing anything else.
+TraceForge is currently built from source. The published build is self-contained and runs on any 64-bit Windows PC with nothing else installed.
 
-### Building a Standalone Copy
+1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download).
+2. In the folder containing `TraceForge.csproj`, run:
 
-1. Install the **.NET 10 SDK** on Windows.
-2. Open a terminal in the project folder, the one with `TraceForge.csproj` in it.
-3. Run:
+   ```
+   dotnet publish TraceForge.csproj -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o .\publish
+   ```
 
-```powershell
-dotnet publish TraceForge.csproj -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o .\publish
-```
+3. Copy the `publish` folder anywhere and run `TraceForge.exe`.
 
-4. Copy the `publish` folder wherever you want it.
-5. Run `TraceForge.exe`.
-
-> **Important:** Don't turn on trimming (`PublishTrimmed`). WPF doesn't support it, and the program will crash when it starts.
-
-Once it's running, press **F1** (or go to Help, User Guide) to open the built-in guide.
-
-## What You Can Do With It
-
-- Build a tree of folders and modules, and rename, reorder, move, delete, and restore them (all of it can be undone)
-- Write outlines with headings and typed attributes: text, integer, real, boolean, date, and enumeration
-- Edit cells with validation, sort naturally, filter, and save views
-- Copy and paste whole sections, and undo or redo up to 100 steps
-- Link requirements from one level to the next, with link arrows, a trace tree, and suspect-link review
-- See what a change will affect upstream and downstream, check coverage, and find traceability gaps
-- Look back at the full revision history of any object and restore an old revision as a new one
-- Freeze a module (or a module and everything under it) as a baseline, then compare it to the current state or to another baseline
-- Leave review comments, attach files (checked with SHA-256), and embed pictures and tables in text
-- Import and export CSV (with a preview and a guard against spreadsheet formulas), ReqIF, and a standalone HTML report
-- Run an integrity check, read the audit log, back up and restore a project, and clean out unused attachment files
-- Get help from a searchable user guide, a shortcuts list, and a Help, About dialog
+> **Important:** Don't enable trimming (`PublishTrimmed`). WPF doesn't support it and the app will crash on startup.
 
 ## Links and Traceability
 
-A link can only go from an object to an object in a **direct child module**. The store enforces that, so your trace structure always matches the levels of your documents.
-
-When an object changes, the links to it can become **suspect** until someone reviews them. The suspect-link review, impact analysis, and gap reports all build on that.
+A link can only go from an object to an object in a **direct child module**; the store enforces this. When an object changes, links to it become **suspect** until reviewed. Suspect-link review, impact analysis, and gap reports all build on this.
 
 ## Safety and Data Protection
 
-TraceForge is built so that mistakes can be undone.
+- **Soft delete:** deleted modules, folders, and objects stay in the project and can be restored.
+- **Permanent delete:** only works on already-deleted items. You must type the name to confirm, you're warned if links to remaining modules would be lost, and it's refused if the module has a baseline.
+- **Backup/restore:** File → Back Up Project saves a single zip. Restore always goes to a new folder, never overwriting.
+- **Upgrades:** older projects are upgraded automatically on open, after a safety copy of the database is saved to the project's backups folder.
+- **Integrity check:** verifies the database, references, outlines, revision history, attribute values, and attachment hashes.
 
-- **Soft delete.** Deleted modules, folders, and objects stay in the project, and you can restore them.
-- **Permanent delete** only works on things that are already deleted. You have to type the name to confirm, you get a warning if links to modules that are staying would be lost, and it's refused outright if the module has a baseline.
-- **Backup and restore.** File, Back Up Project saves the whole project as one zip file. Restoring always goes into a new folder, so it never overwrites anything.
-- **Upgrades.** When you open a project made with an older version, it's upgraded automatically, after a safety copy of its database is saved in the project's backups folder.
-- **Integrity check.** It looks over the database, references, outlines, revision history, attribute values, and attachment hashes.
+> **Important:** Once a project is upgraded (database schema 10), older TraceForge versions can't open it. Keep a backup if you need them.
 
-> **Important:** Once this version upgrades a project (database schema 10), older versions of TraceForge can't open it anymore. Keep a backup if you still need the older version.
+## Development
 
-## Requirements
+**Requirements:** Windows, the [.NET 10 SDK](https://dotnet.microsoft.com/download), and any .NET-capable editor.
 
-### To run a published copy
-
-- 64-bit Windows
-- Nothing else, as long as the copy was published as self-contained
-
-### To build or modify the project
-
-- Windows
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- Visual Studio, Visual Studio Code, or any editor that works with .NET
-
-## Building the Project
-
-Clone or download the repository, then run these from the project folder:
-
-```powershell
+```
 dotnet build                          # debug build
-dotnet run                            # start the desktop app
-dotnet test TraceForge.sln            # run the automated tests
+dotnet run                            # start the app
+dotnet test TraceForge.sln            # run tests
 dotnet build TraceForge.sln -c Release
 ```
 
-A debug build is only meant for development. To make a copy you can give to someone else, use `dotnet publish` as shown above.
+Debug builds are for development only; use `dotnet publish` (above) to produce a distributable copy.
 
-## Project Structure
+### Project structure
 
-The desktop app sits at the solution root, and the libraries and tests each have their own folder.
+| Path                            | Contents                                                                                                                         |
+|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| `src/TraceForge.Domain`         | Core logic with no file or database access: outlines, import planning, markup, coverage, tracing, snapshots, reports, ReqIF      |
+| `src/TraceForge.Application`    | Contracts for the project store and package service, plus the undo stack                                                         |
+| `src/TraceForge.Infrastructure` | SQLite store (one partial-class file per area), package service, diagnostic log                                                  |
+| Solution root                   | WPF app: `MainWindow*.cs`, `Workspace.cs`, `Dialogs.cs`, `HelpGuide.cs`, and `Assets/` (the icon)                                |
+| `tests/`                        | xUnit tests for the domain and infrastructure layers                                                                             |
+| `docs/PROJECT_FORMAT.md`        | Project folder format, schema history, and lifecycle rules                                                                       |
 
-| Path | Contents |
-|---|---|
-| `src/TraceForge.Domain` | The core logic, with no file or database access: outlines, import planning, markup, coverage, tracing, snapshots, reports, ReqIF |
-| `src/TraceForge.Application` | The contracts for the project store and package service, plus the undo stack |
-| `src/TraceForge.Infrastructure` | The SQLite store (one partial-class file per area), the package service, and the diagnostic log |
-| Solution root | The WPF app: `MainWindow*.cs`, `Workspace.cs`, `Dialogs.cs`, `HelpGuide.cs`, and `Assets/` (the icon) |
-| `tests/` | xUnit tests for the domain and infrastructure layers |
-| `docs/PROJECT_FORMAT.md` | The project folder format, schema history, and lifecycle rules |
+A project is a `.traceproj` folder containing `project.json`, `project.db` (SQLite), and `attachments/`. Outside a project, TraceForge writes only to `%LocalAppData%\TraceForge\` (`ui.json`, `diagnostics.log`, `crash.log`); Help → Open Log Folder goes there.
 
-A project is a `.traceproj` folder containing `project.json`, `project.db` (SQLite), and an `attachments/` folder.
+### Design rules
 
-Outside of a project, TraceForge only writes to `%LocalAppData%\TraceForge\`: `ui.json` (your View menu choices), `diagnostics.log`, and `crash.log`. Help, Open Log Folder takes you there.
-
-### Design Rules
-
-If you're changing the code, these are worth keeping in mind:
-
-- Siblings are ordered by `sort_order`, then name (ignoring case), then id. The store and the app have to agree on this.
-- Two live siblings can't share a name, ignoring case.
-- Audit events, revisions, baselines, and comments are append-only everywhere except when a module is permanently deleted.
-- To change the database, add a migration and bump `SqliteProjectStore.LatestSchemaVersion` and `ProjectManifest.CurrentSchemaVersion` together. A test makes sure they match.
+- Siblings are ordered by `sort_order`, then name (case-insensitive), then id. The store and app must agree.
+- Live siblings can't share a name (case-insensitive).
+- Audit events, revisions, baselines, and comments are append-only, except when a module is permanently deleted.
+- Schema changes need a migration, and `SqliteProjectStore.LatestSchemaVersion` and `ProjectManifest.CurrentSchemaVersion` must be bumped together (a test enforces this).
 - Update `HelpGuide.cs` and `docs/PROJECT_FORMAT.md` whenever a feature or the format changes.
 
 ## Known Limitations
 
-- Delete Permanently can't be undone, and it clears the undo history. Undo history only lasts for the current session.
-- A deleted module stays live on purpose, so its objects still show up in global lists, search, reports, and link pickers until it's permanently deleted.
-- Permanent delete leaves the module's attachment files behind until you run File, Clean Up Unused Attachment Files.
+- Delete Permanently can't be undone and clears the undo history, which only lasts for the current session.
+- A deleted module stays live by design: its objects still appear in global lists, search, reports, and link pickers until permanently deleted.
+- Permanent delete leaves the module's attachment files behind until you run File → Clean Up Unused Attachment Files.
 - Zipped `.reqifz` files and ReqIF relations can't be imported yet.
-
-## Current Status
-
-**Overall:** Release candidate (version 1.0.0-rc.1)
-
-| Component | Status |
-|---|---|
-| Modules, folders, and outlines | Working |
-| Links, suspect links, and impact analysis | Working |
-| Revisions and baselines | Working |
-| Comments and attachments | Working |
-| CSV, ReqIF, and HTML import/export | Working |
-| Backup, restore, and integrity check | Working |
-| Built-in user guide | Working |
-| Automated tests | Passing |
-
-## Future Work
-
-Right now the focus is on using it with real projects and fixing whatever turns up.
-
-After that, improvements will come as new needs show up, and the project format will stay stable so existing projects keep opening.
 
 ## References
 
-- [.NET — Microsoft](https://dotnet.microsoft.com/)
-- [Windows Presentation Foundation — Microsoft](https://learn.microsoft.com/dotnet/desktop/wpf/)
+- [.NET](https://dotnet.microsoft.com/)
+- [Windows Presentation Foundation](https://learn.microsoft.com/dotnet/desktop/wpf/)
 - [SQLite](https://www.sqlite.org/)
-- [ReqIF — Object Management Group](https://www.omg.org/spec/ReqIF/)
+- [ReqIF (OMG)](https://www.omg.org/spec/ReqIF/)
 
 ## License
 
